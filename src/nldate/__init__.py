@@ -3,18 +3,30 @@ import re
 from datetime import date, timedelta
 
 _MONTHS: dict[str, int] = {
-    "january": 1, "jan": 1,
-    "february": 2, "feb": 2,
-    "march": 3, "mar": 3,
-    "april": 4, "apr": 4,
+    "january": 1,
+    "jan": 1,
+    "february": 2,
+    "feb": 2,
+    "march": 3,
+    "mar": 3,
+    "april": 4,
+    "apr": 4,
     "may": 5,
-    "june": 6, "jun": 6,
-    "july": 7, "jul": 7,
-    "august": 8, "aug": 8,
-    "september": 9, "sep": 9, "sept": 9,
-    "october": 10, "oct": 10,
-    "november": 11, "nov": 11,
-    "december": 12, "dec": 12,
+    "june": 6,
+    "jun": 6,
+    "july": 7,
+    "jul": 7,
+    "august": 8,
+    "aug": 8,
+    "september": 9,
+    "sep": 9,
+    "sept": 9,
+    "october": 10,
+    "oct": 10,
+    "november": 11,
+    "nov": 11,
+    "december": 12,
+    "dec": 12,
 }
 
 _KEYWORD_OFFSETS: dict[str, int] = {
@@ -28,13 +40,22 @@ _UNIT_DAYS: dict[str, int] = {"day": 1, "days": 1, "week": 7, "weeks": 7}
 _UNIT_MONTHS: dict[str, int] = {"month": 1, "months": 1, "year": 12, "years": 12}
 
 _WEEKDAYS: dict[str, int] = {
-    "monday": 0, "mon": 0,
-    "tuesday": 1, "tue": 1, "tues": 1,
-    "wednesday": 2, "wed": 2,
-    "thursday": 3, "thu": 3, "thurs": 3,
-    "friday": 4, "fri": 4,
-    "saturday": 5, "sat": 5,
-    "sunday": 6, "sun": 6,
+    "monday": 0,
+    "mon": 0,
+    "tuesday": 1,
+    "tue": 1,
+    "tues": 1,
+    "wednesday": 2,
+    "wed": 2,
+    "thursday": 3,
+    "thu": 3,
+    "thurs": 3,
+    "friday": 4,
+    "fri": 4,
+    "saturday": 5,
+    "sat": 5,
+    "sunday": 6,
+    "sun": 6,
 }
 
 _MONTH_RE = "|".join(sorted(_MONTHS, key=len, reverse=True))
@@ -162,12 +183,12 @@ def _parse_relative(text: str, today: date) -> date | None:
 
 
 def _parse_absolute(text: str) -> date | None:
-    m = re.fullmatch(r"(\d{4})-(\d{1,2})-(\d{1,2})", text)
+    m = re.fullmatch(r"(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})", text)
     if m:
         y, mo, d = (int(x) for x in m.groups())
         return date(y, mo, d)
 
-    m = re.fullmatch(r"(\d{1,2})/(\d{1,2})/(\d{4})", text)
+    m = re.fullmatch(r"(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})", text)
     if m:
         mo, d, y = (int(x) for x in m.groups())
         return date(y, mo, d)
