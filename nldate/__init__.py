@@ -1,5 +1,11 @@
 import re
-from datetime import date
+from datetime import date, timedelta
+
+_KEYWORD_OFFSETS: dict[str, int] = {
+    "today": 0,
+    "yesterday": -1,
+    "tomorrow": 1,
+}
 
 _MONTHS: dict[str, int] = {
     "january": 1, "jan": 1,
@@ -27,6 +33,13 @@ def _normalize(s: str) -> str:
     return text
 
 
+def _parse_keyword(text: str, today: date) -> date | None:
+    offset = _KEYWORD_OFFSETS.get(text)
+    if offset is None:
+        return None
+    return today + timedelta(days=offset)
+
+
 def _parse_absolute(text: str) -> date | None:
     m = re.fullmatch(r"(\d{4})-(\d{1,2})-(\d{1,2})", text)
     if m:
@@ -50,7 +63,13 @@ def _parse_absolute(text: str) -> date | None:
 
 
 def parse(s: str, today: date | None = None) -> date:
+    if today is None:
+        today = date.today()
     text = _normalize(s)
+
+    result = _parse_keyword(text, today)
+    if result is not None:
+        return result
 
     result = _parse_absolute(text)
     if result is not None:
