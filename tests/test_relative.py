@@ -157,3 +157,22 @@ def test_day_after_before(s: str, expected: date) -> None:
 )
 def test_relative_case_and_whitespace(s: str, expected: date) -> None:
     assert parse(s, today=TODAY) == expected
+
+
+@pytest.mark.parametrize(
+    ("s", "expected"),
+    [
+        ("two weeks ago", date(2025, 6, 1)),
+        ("three days from now", date(2025, 6, 18)),
+        ("in five days", date(2025, 6, 20)),
+        ("one year ago", date(2024, 6, 15)),
+        ("ten days ago", date(2025, 6, 5)),
+        ("twenty days from now", date(2025, 7, 5)),
+        ("twenty-one days from now", date(2025, 7, 6)),
+        ("twenty one days from now", date(2025, 7, 6)),
+        ("five days before December 1, 2025", date(2025, 11, 26)),
+        ("two months after January 1, 2025", date(2025, 3, 1)),
+    ],
+)
+def test_word_numbers(s: str, expected: date) -> None:
+    assert parse(s, today=TODAY) == expected

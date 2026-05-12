@@ -58,16 +58,64 @@ _WEEKDAYS: dict[str, int] = {
     "sun": 6,
 }
 
+_NUMBER_WORDS: dict[str, int] = {
+    "zero": 0,
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+    "thirteen": 13,
+    "fourteen": 14,
+    "fifteen": 15,
+    "sixteen": 16,
+    "seventeen": 17,
+    "eighteen": 18,
+    "nineteen": 19,
+    "twenty": 20,
+    "thirty": 30,
+    "forty": 40,
+    "fifty": 50,
+    "sixty": 60,
+    "seventy": 70,
+    "eighty": 80,
+    "ninety": 90,
+}
+
+_TENS_RE = "twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety"
+_ONES_RE = "one|two|three|four|five|six|seven|eight|nine"
+
 _MONTH_RE = "|".join(sorted(_MONTHS, key=len, reverse=True))
 _UNIT_RE = "|".join(sorted([*_UNIT_DAYS, *_UNIT_MONTHS], key=len, reverse=True))
 _WEEKDAY_RE = "|".join(sorted(_WEEKDAYS, key=len, reverse=True))
+_NUMBER_WORD_RE = "|".join(sorted(_NUMBER_WORDS, key=len, reverse=True))
 _ORDINAL_RE = re.compile(r"(\d+)(?:st|nd|rd|th)\b")
+
+
+def _substitute_number_words(text: str) -> str:
+    def compound(m: re.Match[str]) -> str:
+        return str(_NUMBER_WORDS[m.group(1)] + _NUMBER_WORDS[m.group(2)])
+
+    def single(m: re.Match[str]) -> str:
+        return str(_NUMBER_WORDS[m.group(1)])
+
+    text = re.sub(rf"\b({_TENS_RE})[ -]({_ONES_RE})\b", compound, text)
+    text = re.sub(rf"\b({_NUMBER_WORD_RE})\b", single, text)
+    return text
 
 
 def _normalize(s: str) -> str:
     text = s.strip().lower()
     text = _ORDINAL_RE.sub(r"\1", text)
     text = re.sub(r"(?<=[a-z])\.", "", text)
+    text = _substitute_number_words(text)
     text = re.sub(r"\bthe\s+", "", text)
     text = re.sub(rf"\ban?\s+(?={_UNIT_RE}\b)", "1 ", text)
     text = re.sub(r"\s+", " ", text).strip()
