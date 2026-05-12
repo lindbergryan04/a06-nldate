@@ -27,8 +27,19 @@ _KEYWORD_OFFSETS: dict[str, int] = {
 _UNIT_DAYS: dict[str, int] = {"day": 1, "days": 1, "week": 7, "weeks": 7}
 _UNIT_MONTHS: dict[str, int] = {"month": 1, "months": 1, "year": 12, "years": 12}
 
+_WEEKDAYS: dict[str, int] = {
+    "monday": 0, "mon": 0,
+    "tuesday": 1, "tue": 1, "tues": 1,
+    "wednesday": 2, "wed": 2,
+    "thursday": 3, "thu": 3, "thurs": 3,
+    "friday": 4, "fri": 4,
+    "saturday": 5, "sat": 5,
+    "sunday": 6, "sun": 6,
+}
+
 _MONTH_RE = "|".join(sorted(_MONTHS, key=len, reverse=True))
 _UNIT_RE = "|".join(sorted([*_UNIT_DAYS, *_UNIT_MONTHS], key=len, reverse=True))
+_WEEKDAY_RE = "|".join(sorted(_WEEKDAYS, key=len, reverse=True))
 _ORDINAL_RE = re.compile(r"(\d+)(?:st|nd|rd|th)\b")
 
 
@@ -78,11 +89,30 @@ def _parse_keyword(text: str, today: date) -> date | None:
     return today + timedelta(days=offset)
 
 
+def _parse_weekday(text: str, today: date) -> date | None:
+    m = re.fullmatch(rf"(?:(next|last|this)\s+)?({_WEEKDAY_RE})", text)
+    if not m:
+        return None
+    direction = m.group(1) or "next"
+    target = _WEEKDAYS[m.group(2)]
+    current = today.weekday()
+    if direction == "this":
+        offset = (target - current) % 7
+    elif direction == "next":
+        offset = ((target - current - 1) % 7) + 1
+    else:
+        offset = -(((current - target - 1) % 7) + 1)
+    return today + timedelta(days=offset)
+
+
 def _resolve_anchor(text: str, today: date) -> date | None:
     text = text.strip()
     kw = _parse_keyword(text, today)
     if kw is not None:
         return kw
+    wk = _parse_weekday(text, today)
+    if wk is not None:
+        return wk
     return _parse_absolute(text)
 
 
@@ -159,6 +189,10 @@ def parse(s: str, today: date | None = None) -> date:
     text = _normalize(s)
 
     result = _parse_keyword(text, today)
+    if result is not None:
+        return result
+
+    result = _parse_weekday(text, today)
     if result is not None:
         return result
 
