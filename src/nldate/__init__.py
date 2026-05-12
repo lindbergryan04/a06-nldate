@@ -67,6 +67,7 @@ _ORDINAL_RE = re.compile(r"(\d+)(?:st|nd|rd|th)\b")
 def _normalize(s: str) -> str:
     text = s.strip().lower()
     text = _ORDINAL_RE.sub(r"\1", text)
+    text = re.sub(r"(?<=[a-z])\.", "", text)
     text = re.sub(r"\bthe\s+", "", text)
     text = re.sub(rf"\ban?\s+(?={_UNIT_RE}\b)", "1 ", text)
     text = re.sub(r"\s+", " ", text).strip()
